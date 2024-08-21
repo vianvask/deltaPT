@@ -119,34 +119,7 @@ vector<vector<double> > Nbark(function<double(double)> Gamma, const double k, ve
     return Nt;
 }
 
-// worse approximation of the false vacuum fraction neglecting the first J bubbles
-vector<vector<double> > Fk(function<double(double)> Gamma, const double k, int J, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at) {
-    
-    const double dt = at[1][0] - at[0][0];
-    vector<vector<double> > Nk = Nbark(Gamma, k, Ft, taut, at);
-    
-    double t, tau, Nt;
-    vector<double> tmp(2);
-    vector<vector<double> > F;
-    for (int jt = 0; jt < at.size(); jt++) {
-        t = at[jt][0];
-        tau = taut[jt][1];
-        
-        // integrate the region where Nbark > J
-        Nt = 0.0;
-        for (int j = 0; j < taut.size(); j++) {
-            if (Nk[j][1] > J && taut[j][1] < tau) {
-                Nt += 4.0*PI/3.0*dt*Gamma(taut[j][0])*pow(at[j][1]*radius(tau,taut[j][1]), 3.0);
-            }
-        }
-        tmp[0] = t;
-        tmp[1] = exp(-Nt);
-        F.push_back(tmp);
-    }
-    return F;
-}
-
-// better approximation of the false vacuum fraction neglecting the first J bubbles
+// the false vacuum fraction neglecting the first J bubbles
 vector<vector<double> > Fk(vector<vector<double> > &Nk, vector<vector<vector<double> > > &pd, const double k, int J, vector<vector<double> > &taut) {
     
     const double dt = taut[1][0] - taut[0][0];
