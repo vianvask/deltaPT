@@ -18,10 +18,9 @@ int main (int argc, char *argv[]) {
         return exp(beta*t - pow(gammapbeta*beta*t,2.0)/2.0);
     };
     
-    int jtmax = 3200;
     int jdmax = 100;
+    int jtmax = 3200; // increase jtmax or decrease the t range for fast transitions
     double tmin = -1.6; double tmax = 1.6;
-    //double tmin = -1.2; double tmax = 1.2; // shorter timestep needed for beta/H > 10
     double dt = (tmax-tmin)/(1.0*jtmax);
    
     // average evolution
@@ -96,6 +95,7 @@ int main (int argc, char *argv[]) {
     filename3 = "tj_beta" + to_string_prec(beta,2) + "_gammaperbeta" + to_string_prec(gammapbeta,2) + "_J" + to_string(J) + "_N" + to_string(Nsim) + ".dat";
     outfileT.open(filename3.c_str());
     
+    // initialize delta binning
     int Nbins = 10000, jbin;
     double xbin = 1.0/(1.0*Nsim*2.0/(1.0*Nbins));
     double rhoavg, delta;
@@ -107,6 +107,7 @@ int main (int argc, char *argv[]) {
         }
     }
     
+    // generate Nsim realizations
     if (sim == 0) {
         for (int js = 0; js < Nsim; js++) {
             if (js%32 == 0) {
@@ -116,6 +117,8 @@ int main (int argc, char *argv[]) {
                 k = klist[jk];
                 
                 jtj = jtlist(Nk[jk], J, mt);
+                
+                // output times t_j for j<J and k=0.9kmax
                 if (jk == 12) {
                     for (int j = 0; j < J; j++) {
                         outfileT << taut[jtj[j]][0] << "   ";

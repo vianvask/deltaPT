@@ -19,5 +19,3 @@ vector<vector<vector<double> > > pd(function<double(double)> Gamma, const double
 double Vfrac(double tau, double tauj, double dj, double k);
 
 vector<vector<double> > rhoevolution(vector<vector<double> > &Ft, vector<vector<double> > &Ht);
-
-vector< vector<int> > getAllSubsets(vector<int> &set);

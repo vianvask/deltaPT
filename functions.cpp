@@ -1,6 +1,6 @@
 #include "functions.h"
 
-// evolution of the Universe on average, returns kmax
+// evolution of the Universe on average, returns {kmax,tkmax}
 vector<double> averageevolution(function<double(double)> Gamma, const double tmin, const int jtmax, const double dt, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht) {
     
     // initial state in vacuum dominance:
@@ -253,6 +253,7 @@ vector<vector<vector<double> > > pd(function<double(double)> Gamma, const double
     return pd;
 }
 
+// volume of intersection of two bubbles separated by distance d
 double Vint(double d, double R, double r) {
     if (R+r > d && abs(R-r) < d) {
         return PI*pow(R+r-d,2.0)*(d*d + 2.0*d*r - 3.0*r*r + 2.0*d*R + 6.0*r*R - 3.0*R*R)/(12.0*d);
@@ -272,22 +273,4 @@ double Vfrac(double tau, double tauj, double dj, double k) {
         return Vint(dj, max(0.0,dj-1.0/k)+radius(tau,tauj), 1.0/k)/Vk;
     }
     return 0.0;
-}
-
-vector< vector<int> > getAllSubsets(vector<int> &set){
-    vector<vector<int> > subset;
-    vector<int> empty;
-    subset.push_back(empty);
-
-    vector< vector<int> > subsetTemp;
-    for (int i = 0; i < set.size(); i++) {
-        subsetTemp = subset;
-        
-        for (int j = 0; j < subsetTemp.size(); j++)
-            subsetTemp[j].push_back( set[i] );
-
-        for (int j = 0; j < subsetTemp.size(); j++)
-            subset.push_back( subsetTemp[j] );
-    }
-    return subset;
 }
