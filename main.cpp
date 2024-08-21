@@ -1,12 +1,15 @@
 #include "functions.h"
 
+// units are chosen such that H0 = 1;
+
 int main (int argc, char *argv[]) {
-    // units are chosen such that H0 = 1;
+    
+    // parameters of the nucleation rate:
     const double beta = atof(argv[1]);
     const double gammapbeta = atof(argv[2]);
+    
     const int Nsim = atoi(argv[3]); // number of realizations
     const int J = atoi(argv[4]); // average F for j>J
-    const int sim = atoi(argv[5]); // sim > 0: 3d simulation, slow
 
     clock_t time_req = clock();
     cout << setprecision(4) << fixed;
@@ -84,7 +87,6 @@ int main (int argc, char *argv[]) {
     vector<vector<double> > rho(jtmax, vector<double > (2));
 
     int nint = 10000;
-    vector<vector<double> > xj(J, vector<double> (3));
     vector<double> x(3);
     vector<vector<double> > xlist(nint, vector<double> (3));
     
@@ -108,126 +110,61 @@ int main (int argc, char *argv[]) {
     }
     
     // generate Nsim realizations
-    if (sim == 0) {
-        for (int js = 0; js < Nsim; js++) {
-            if (js%32 == 0) {
-                cout << "\r" << js/(1.0*Nsim) << "    " << flush;
-            }
-            for (int jk = 0; jk < jkmax; jk++) {
-                k = klist[jk];
-                
-                jtj = jtlist(Nk[jk], J, mt);
-                
-                // output times t_j for j<J and k=0.9kmax
-                if (jk == 12) {
-                    for (int j = 0; j < J; j++) {
-                        outfileT << taut[jtj[j]][0] << "   ";
-                    }
-                    outfileT << endl;
-                }
-                
-                for (int j = 0; j < J; j++) {
-                    tauj[j] = taut[jtj[j]][1];
-                    dj[j] = findrootG(randomreal(0.0,pdk[jk][jtj[j]][jdmax-1][1],mt), 0.001, pdk[jk][jtj[j]]);
-                    if (sim > 0) {
-                        xj[j] = sphererandr(dj[j], mt);
-                    }
-                }
-                
-                for (int jt = 0; jt < jtmax; jt++) {
-                    tau = taut[jt][1];
-                    FkS = 1.0;
-                    
-                    for (int j = 0; j < J; j++) {
-                        FkS *= 1.0-Vfrac(tau, tauj[j], dj[j], k);
-                    }
-                    
-                    tmp[0] = taut[jt][0];
-                    tmp[1] = FkS*FkW[jk][jt][1];
-                    F[jt] = tmp;
-                }
-                
-                rho = rhoevolution(F, Ht);
-                rhoavg = pow(interpolate(tklist[jk], Ht),2.0);
-                
-                // output F and rho for k=0.9kmax from the first 10 simulations
-                if (js < 10 && jk == 12) {
-                    for (int jt = 0; jt < at.size(); jt++) {
-                        outfileF << F[jt][1] << "   ";
-                        outfileD << rho[jt][1]/pow(Ht[jt][1],2.0)-1.0 << "   ";
-                    }
-                    outfileF << endl;
-                    outfileD << endl;
-                }
-                
-                // bin the delta distribution
-                delta = interpolate(tklist[jk], rho)/rhoavg - 1.0;
-                jbin = max(0, min(Nbins-1, (int) round(Nbins*(delta+1.0)/2.0)));
-                deltabins[jbin][jk+1] += xbin;
-            }
-        }
-    } else {
-        for (int js = 0; js < Nsim; js++) {
+    for (int js = 0; js < Nsim; js++) {
+        if (js%32 == 0) {
             cout << "\r" << js/(1.0*Nsim) << "    " << flush;
+        }
+        for (int jk = 0; jk < jkmax; jk++) {
+            k = klist[jk];
             
-            for (int jk = 0; jk < jkmax; jk++) {
-                k = klist[jk];
-                
-                jtj = jtlist(Nk[jk], J, mt);
-                if (jk == 12) {
-                    for (int j = 0; j < J; j++) {
-                        outfileT << taut[jtj[j]][0] << "   ";
-                    }
-                    outfileT << endl;
+            // generate times t_j
+            jtj = jtlist(Nk[jk], J, mt);
+            
+            // output times t_j for j<J and k=0.9kmax
+            if (jk == 12) {
+                for (int j = 0; j < J; j++) {
+                    outfileT << taut[jtj[j]][0] << "   ";
                 }
-                
-                for (int jx = 0; jx < nint; jx++) {
-                    xlist[jx] = sphererand(1.0/k, mt);
-                }
+                outfileT << endl;
+            }
+            
+            // generate distrances d_j
+            for (int j = 0; j < J; j++) {
+                tauj[j] = taut[jtj[j]][1];
+                dj[j] = findrootG(randomreal(0.0,pdk[jk][jtj[j]][jdmax-1][1],mt), 0.001, pdk[jk][jtj[j]]);
+            }
+            
+            // compute the false vacuum fraction
+            for (int jt = 0; jt < jtmax; jt++) {
+                tau = taut[jt][1];
+                FkS = 1.0;
                 
                 for (int j = 0; j < J; j++) {
-                    tauj[j] = taut[jtj[j]][1];
-                    dj[j] = findrootG(randomreal(0.0,pdk[jk][jtj[j]][jdmax-1][1],mt), 0.001, pdk[jk][jtj[j]]);
-                    
-                    xj[j] = sphererandr(dj[j], mt);
+                    FkS *= 1.0-Vfrac(tau, tauj[j], dj[j], k);
                 }
                 
-                for (int jt = 0; jt < jtmax; jt++) {
-                    tau = taut[jt][1];
-                    FkS = 1.0;
-                    
-                    for (int jx = 0; jx < nint; jx++) {
-                        for (int j = 0; j < J; j++) {
-                            if (tau > tauj[j] && distance(xlist[jx],xj[j]) < max(0.0,dj[j]-1.0/k) + radius(tau,tauj[j])) {
-                                FkS -= 1.0/(1.0*nint);
-                                j = J;
-                            }
-                        }
-                    }
-                    
-                    tmp[0] = taut[jt][0];
-                    tmp[1] = FkS*FkW[jk][jt][1];
-                    F[jt] = tmp;
-                }
-                
-                rho = rhoevolution(F, Ht);
-                rhoavg = pow(interpolate(tklist[jk], Ht),2.0);
-                
-                // output F and rho for k=0.9kmax from the first 10 simulations
-                if (js < 10 && jk == 12) {
-                    for (int jt = 0; jt < at.size(); jt++) {
-                        outfileF << F[jt][1] << "   ";
-                        outfileD << rho[jt][1]/pow(Ht[jt][1],2.0)-1.0 << "   ";
-                    }
-                    outfileF << endl;
-                    outfileD << endl;
-                }
-                
-                // bin the delta distribution
-                delta = interpolate(tklist[jk], rho)/rhoavg - 1.0;
-                jbin = max(0, min(Nbins-1, (int) round(Nbins*(delta+1.0)/2.0)));
-                deltabins[jbin][jk+1] += xbin;
+                tmp[0] = taut[jt][0];
+                tmp[1] = FkS*FkW[jk][jt][1];
+                F[jt] = tmp;
             }
+            
+            rho = rhoevolution(F, Ht);
+            rhoavg = pow(interpolate(tklist[jk], Ht),2.0);
+            
+            // output F and rho for k=0.9kmax from the first 10 simulations
+            if (js < 10 && jk == 12) {
+                for (int jt = 0; jt < at.size(); jt++) {
+                    outfileF << F[jt][1] << "   ";
+                    outfileD << rho[jt][1]/pow(Ht[jt][1],2.0)-1.0 << "   ";
+                }
+                outfileF << endl;
+                outfileD << endl;
+            }
+            
+            // bin the delta distribution
+            delta = interpolate(tklist[jk], rho)/rhoavg - 1.0;
+            jbin = max(0, min(Nbins-1, (int) round(Nbins*(delta+1.0)/2.0)));
+            deltabins[jbin][jk+1] += xbin;
         }
     }
     
