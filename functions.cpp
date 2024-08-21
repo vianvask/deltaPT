@@ -22,7 +22,7 @@ vector<double> averageevolution(function<double(double)> Gamma, const double tmi
         tmp[1] = tau;
         taut.push_back(tmp);
         
-        //calculate the false vacuum fraction
+        // compute the false vacuum fraction
         Nt = 0.0;
         F0 = F;
         for (int j = 0; j < taut.size(); j++) {

@@ -1,7 +1,5 @@
 #include "functions.h"
 
-// units are chosen such that H0 = 1;
-
 int main (int argc, char *argv[]) {
     
     // parameters of the nucleation rate:
@@ -16,7 +14,7 @@ int main (int argc, char *argv[]) {
     
     rgen mt(time(NULL)*(1+beta)); // random number generator
       
-    // bubble nucleation rate
+    // bubble nucleation rate, units are chosen such that H0 = 1;
     function<double(double)> Gamma = [beta, gammapbeta](double t) {
         return exp(beta*t - pow(gammapbeta*beta*t,2.0)/2.0);
     };
@@ -36,16 +34,15 @@ int main (int argc, char *argv[]) {
     
     string filename, filename2, filename3;
     ofstream outfileF, outfileD, outfileT;
-    
-    filename = "klist_beta" + to_string_prec(beta,2) + "_gammaperbeta" + to_string_prec(gammapbeta,2) + "_J" + to_string(J) + ".dat";
-    outfileF.open(filename.c_str());
-    
+
     // list of k/kmax values
     vector<double> klist {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.82, 0.84, 0.86, 0.88, 0.9, 0.92, 0.94, 0.96, 0.98, 1.0};
       
     // compute the times when the scales k re-enter horizon
     int jkmax = klist.size();
     vector<double> tklist(jkmax);
+    filename = "klist_beta" + to_string_prec(beta,2) + "_gammaperbeta" + to_string_prec(gammapbeta,2) + "_J" + to_string(J) + ".dat";
+    outfileF.open(filename.c_str());
     for (int jk = 0; jk < jkmax; jk++) {
         klist[jk] = kmax*klist[jk];
         tklist[jk] = findtk(klist[jk], tkmax, at, Ht);
