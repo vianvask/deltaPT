@@ -53,7 +53,7 @@ vector<double> averageevolution(function<double(double)> Gamma, const double tmi
     return tmp;
 }
 
-// evolution of the Universe on average, returns kmax
+// evolution of the total energy density
 vector<vector<double> > rhoevolution(vector<vector<double> > &Ft, vector<vector<double> > &Ht) {
     
     // initial state in vacuum dominance:
@@ -77,7 +77,7 @@ vector<vector<double> > rhoevolution(vector<vector<double> > &Ft, vector<vector<
     return rho;
 }
 
-// evolution of the Universe on average, returns kmax
+// time of horizon reentry of scale k
 double findtk(double k, double tkmax, vector<vector<double> > &at, vector<vector<double> > &Ht) {
     
     vector<vector<double> > aH;
