@@ -61,7 +61,7 @@ int main (int argc, char *argv[]) {
         Nk[jk] = Nbark(Gamma, k, Ft, taut, at);
         
         // distributions of nucleation distances, pdk[jk][jt][jd][d,CDF]
-        pdk[jk] = pd(Gamma, k, jdmax, Ft, taut, at);
+        pdk[jk] = ddist(Gamma, k, jdmax, Ft, taut, at);
         
         // evolution from j>J bubbles FkW[jk][jt][t,F]
         FkW[jk] = Fk(Nk[jk], pdk[jk], k, J+1, taut);

@@ -169,29 +169,8 @@ vector<int> jtlist(vector<vector<double> > &Nk, int J, rgen &mt) {
     return jtlist;
 }
 
-// PDF of the nucleation times of the fitst j<J bubbles
-vector<vector<double> > ptj(function<double(double)> Gamma, const double k, int J, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at) {
-    
-    const double dt = at[1][0] - at[0][0];
-    vector<vector<double> > Nk = Nbark(Gamma, k, Ft, taut, at);
-    
-    double p, ptot;
-    vector<double> tmp(taut.size());
-    vector<vector<double> > pt;
-    for (int j = 1; j <= J; j++) {
-        ptot = 0.0;
-        for (int jt = 0; jt < taut.size(); jt++) {
-            p = Nk[jt][2]*pow(Nk[jt][1],j-1.0)/tgamma(j)*exp(-Nk[jt][1]);
-            ptot += p;
-            tmp[jt] = p;
-        }
-        pt.push_back(tmp);
-    }
-    return pt;
-}
-
 // CDF of nucleation distances
-vector<vector<vector<double> > > pd(function<double(double)> Gamma, const double k, int jdmax, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at) {
+vector<vector<vector<double> > > ddist(function<double(double)> Gamma, const double k, int jdmax, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at) {
     
     const double dt = at[1][0] - at[0][0];
     vector<vector<double> > Nk = Nbark(Gamma, k, Ft, taut, at);
@@ -201,7 +180,7 @@ vector<vector<vector<double> > > pd(function<double(double)> Gamma, const double
     
     double tau, d, p, ptot;
     vector<vector<double> > tmp(jdmax, vector<double> (3));
-    vector<vector<vector<double> > > pd(taut.size(), vector<vector<double> > (jdmax, vector<double> (2)));
+    vector<vector<vector<double> > > Cd(taut.size(), vector<vector<double> > (jdmax, vector<double> (2)));
     for (int jt = 0; jt < taut.size(); jt++) {
         tau = taut[jt][1];
         
@@ -221,9 +200,9 @@ vector<vector<vector<double> > > pd(function<double(double)> Gamma, const double
             tmp[jd][1] = dd*ptot;
             tmp[jd][2] = p;
         }
-        pd[jt] = tmp;
+        Cd[jt] = tmp;
     }
-    return pd;
+    return Cd;
 }
 
 // volume of intersection of two bubbles separated by distance d

@@ -10,9 +10,7 @@ vector<vector<double> > Fk(vector<vector<double> > &Nk, vector<vector<vector<dou
 
 vector<int> jtlist(vector<vector<double> > &Nk, int J, rgen &mt);
 
-vector<vector<double> > ptj(function<double(double)> Gamma, const double k, int J, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at);
-
-vector<vector<vector<double> > > pd(function<double(double)> Gamma, const double k, int jdmax, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at);
+vector<vector<vector<double> > > ddist(function<double(double)> Gamma, const double k, int jdmax, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at);
 
 double Vfrac(double tau, double tauj, double dj, double k);
 
