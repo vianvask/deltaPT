@@ -119,6 +119,38 @@ vector<vector<double> > Nbark(function<double(double)> Gamma, const double k, ve
     return Nt;
 }
 
+// finds the time range where the computation should be performed
+vector<double> findtrange(function<double(double)> Gamma) {
+    vector<double> trange(2);
+    
+    vector<vector<double> > Ft, taut, at, Ht;
+    vector<double> tmp(2);
+    
+    int jtmax = 6000;
+    double dt = 0.001;
+    tmp = averageevolution(Gamma, -3.0, jtmax, dt, Ft, taut, at, Ht);
+    double kmax = tmp[0];
+        
+    vector<vector<double> > Nk = Nbark(Gamma, kmax, Ft, taut, at);
+        
+    vector<vector<double> > Nt(jtmax, vector<double> (2,0.0));
+    for (int jt = 0; jt < jtmax; jt++) {
+        Nt[jt][0] = Nk[jt][0];
+        Nt[jt][1] = Nk[jt][1];
+    }
+    
+    vector<vector<double> > Tt(jtmax, vector<double> (2,0.0));
+    for (int jt = 0; jt < jtmax; jt++) {
+        Tt[jt][0] = Ft[jt][0];
+        Tt[jt][1] = 1-Ft[jt][1];
+    }
+    
+    trange[0] = findrootG(0.000001, dt, Nt);
+    trange[1] = findrootG(0.999, dt, Tt);
+    
+    return trange;
+}
+
 // the false vacuum fraction neglecting the first J bubbles
 vector<vector<double> > Fk(vector<vector<double> > &Nk, vector<vector<vector<double> > > &pd, const double k, int J, vector<vector<double> > &taut) {
     
