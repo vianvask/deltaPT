@@ -120,7 +120,7 @@ vector<vector<double> > Nbark(function<double(double)> Gamma, const double k, ve
 }
 
 // finds the time range where the computation should be performed
-vector<double> findtrange(function<double(double)> Gamma) {
+vector<double> findtrange(function<double(double)> Gamma, double Nbarmin, double Fmin) {
     vector<double> trange(2);
     
     vector<vector<double> > Ft, taut, at, Ht;
@@ -145,8 +145,8 @@ vector<double> findtrange(function<double(double)> Gamma) {
         Tt[jt][1] = 1-Ft[jt][1];
     }
     
-    trange[0] = findrootG(0.000001, dt, Nt);
-    trange[1] = findrootG(0.999, dt, Tt);
+    trange[0] = findrootG(Nbarmin, dt, Nt);
+    trange[1] = findrootG(1.0-Fmin, dt, Tt);
     
     return trange;
 }

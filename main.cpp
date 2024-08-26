@@ -21,8 +21,8 @@ int main (int argc, char *argv[]) {
     
     int jdmax = 100;
     
-    // find that time range so that barN(tmin,kmax)=10^-6 and barF(tmax)=10^-3
-    vector<double> trange = findtrange(Gamma);
+    // find that time range so that barN(tmin,kmax)=10^-7 and barF(tmax)=10^-3
+    vector<double> trange = findtrange(Gamma, 0.0000001, 0.001);
     int jtmax = 3200;
     double tmin = trange[0]; double tmax = trange[1];
     double dt = (tmax-tmin)/(1.0*jtmax);
