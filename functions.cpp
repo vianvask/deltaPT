@@ -119,6 +119,28 @@ vector<vector<double> > Nbark(function<double(double)> Gamma, const double k, ve
     return Nt;
 }
 
+
+// computes the characteristic bubble radius
+double Rstar(function<double(double)> Gamma, vector<vector<double> > &Ft, vector<vector<double> > &at, double tp) {
+    
+    const double dt = at[1][0] - at[0][0];
+    
+    int jt = 0;
+    double Rstar = 0.0;
+    while (at[jt][0] < tp) {
+        
+        Rstar += dt*Ft[jt][1]*Gamma(at[jt][0])*pow(at[jt][1],3.0);
+        
+        jt++;
+    }
+    Rstar += (tp - at[jt-1][0])*Ft[jt][1]*Gamma(at[jt][0])*pow(at[jt][1],3.0);
+    
+    Rstar = pow(Rstar/pow(at[jt-1][1] + (tp - at[jt-1][0])*(at[jt][1]-at[jt-1][1]),3.0), -1.0/3.0);
+    
+    return Rstar;
+}
+
+
 // finds the time range where the computation should be performed
 vector<double> findtrange(function<double(double)> Gamma, double Nbarmin, double Fmin) {
     vector<double> trange(2);

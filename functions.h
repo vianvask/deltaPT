@@ -6,6 +6,8 @@ double findtk(double k, double tkmax, vector<vector<double> > &at, vector<vector
 
 vector<vector<double> > Nbark(function<double(double)> Gamma, const double k, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at);
 
+double Rstar(function<double(double)> Gamma, vector<vector<double> > &Ft, vector<vector<double> > &at, double tp);
+
 vector<double> findtrange(function<double(double)> Gamma, double Nbarmin, double Fmin);
 
 vector<vector<double> > Fk(vector<vector<double> > &Nk, vector<vector<vector<double> > > &pd, const double k, int J, vector<vector<double> > &tau);
