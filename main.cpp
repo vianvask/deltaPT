@@ -6,8 +6,8 @@ int main (int argc, char *argv[]) {
     const double beta = atof(argv[1]);
     const double gammapbeta = atof(argv[2]);
     
-    const int Nsim = atoi(argv[3]); // number of realizations
-    const int J = atoi(argv[4]); // average F for j>J
+    const int Nsim = 1000000; // number of realizations
+    const int J = 50; // average F for j>J
 
     clock_t time_req = clock();
     cout << setprecision(4) << fixed;
@@ -37,14 +37,20 @@ int main (int argc, char *argv[]) {
     
     string filename, filename2, filename3;
     ofstream outfileF, outfileD, outfileT;
-
+    
+    filename = "tkR_beta_" + to_string_prec(beta,3) + "_gammaperbeta_" + to_string_prec(gammapbeta,3) + ".dat";
+    outfileF.open(filename.c_str());
+    
+    outfileF << tkmax << "   " << kmax << "   " << interpolate(tkmax, Ht) << "   " << Rstar(Gamma, Ft, at, tkmax) << endl;
+    outfileF.close();
+        
     // list of k/kmax values
     vector<double> klist {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.82, 0.84, 0.86, 0.88, 0.9, 0.92, 0.94, 0.96, 0.98, 1.0};
       
     // compute the times when the scales k re-enter horizon
     int jkmax = klist.size();
     vector<double> tklist(jkmax);
-    filename = "klist_beta" + to_string_prec(beta,2) + "_gammaperbeta" + to_string_prec(gammapbeta,2) + "_J" + to_string(J) + ".dat";
+    filename = "klist_beta_" + to_string_prec(beta,3) + "_gammaperbeta_" + to_string_prec(gammapbeta,3) + ".dat";
     outfileF.open(filename.c_str());
     for (int jk = 0; jk < jkmax; jk++) {
         klist[jk] = kmax*klist[jk];
@@ -71,7 +77,7 @@ int main (int argc, char *argv[]) {
     }
     
     // output t, F and FW for k=0.9*kmax
-    filename = "FkW_beta" + to_string_prec(beta,2) + "_gammaperbeta" + to_string_prec(gammapbeta,2) + "_J" + to_string(J) + ".dat";
+    filename = "FkW_beta_" + to_string_prec(beta,3) + "_gammaperbeta_" + to_string_prec(gammapbeta,3) + ".dat";
     outfileF.open(filename.c_str());
     for (int jt = 0; jt < at.size(); jt+=1) {
         outfileF << Ft[jt][0] << "   " << Ft[jt][1]<< "   " << FkW[12][jt][1] << "   " << Nk[12][jt][1] << "   " << Nk[12][jt][2];
@@ -90,11 +96,11 @@ int main (int argc, char *argv[]) {
     vector<double> x(3);
     vector<vector<double> > xlist(nint, vector<double> (3));
     
-    filename = "Fk_beta" + to_string_prec(beta,2) + "_gammaperbeta" + to_string_prec(gammapbeta,2) + "_J" + to_string(J) + ".dat";
+    filename = "Fk_beta_" + to_string_prec(beta,3) + "_gammaperbeta_" + to_string_prec(gammapbeta,3) + ".dat";
     outfileF.open(filename.c_str());
-    filename2 = "deltak_beta" + to_string_prec(beta,2) + "_gammaperbeta" + to_string_prec(gammapbeta,2) + "_J" + to_string(J) + ".dat";
+    filename2 = "deltak_beta_" + to_string_prec(beta,3) + "_gammaperbeta_" + to_string_prec(gammapbeta,3) + ".dat";
     outfileD.open(filename2.c_str());
-    filename3 = "tj_beta" + to_string_prec(beta,2) + "_gammaperbeta" + to_string_prec(gammapbeta,2) + "_J" + to_string(J) + "_N" + to_string(Nsim) + ".dat";
+    filename3 = "tj_beta_" + to_string_prec(beta,3) + "_gammaperbeta_" + to_string_prec(gammapbeta,3) + ".dat";
     outfileT.open(filename3.c_str());
     
     // initialize delta binning
@@ -174,7 +180,7 @@ int main (int argc, char *argv[]) {
     outfileT.close();
     
     // output delta distribution
-    filename2 = "deltabinsk_beta" + to_string_prec(beta,2) + "_gammaperbeta" + to_string_prec(gammapbeta,2) + "_J" + to_string(J) + "_N" + to_string(Nsim) + ".dat";
+    filename2 = "deltabinsk_beta_" + to_string_prec(beta,3) + "_gammaperbeta_" + to_string_prec(gammapbeta,3) + ".dat";
     outfileD.open(filename2.c_str());
     for (int j = 0; j < Nbins; j++) {
         outfileD << deltabins[j][0] << "    ";
@@ -187,5 +193,6 @@ int main (int argc, char *argv[]) {
     
     time_req = clock() - time_req;
     cout << "total evaluation time: " << ((double) time_req/CLOCKS_PER_SEC/60.0) << " minutes." << endl;
+    
     return 0;
 }
