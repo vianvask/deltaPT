@@ -5,7 +5,7 @@ Please cite [2402.04158](https://arxiv.org/abs/2402.04158) if you use this code.
 
 Running takes two input parameters beta/H0 and gamma/beta that parametrize the bubble nucleation rate. The code computes the distribution $P_k(\delta)$ of the density contrast $\delta$ for 18 wavenumbers $k$ by generating $10^6$ realizations of the evolution of the false vacuum fraction $F_k$. For each realization, the nucleation times and distances of the first $j_c=50$ bubbles are generated. The contribution from the $j>j_c$ bubbles is integrated. 
 
-Output:
+Output files:
   - tkR...: largest wavenumber ($k_{\rm max}$) that exits horizon during the thermal inflation: $\left( t_{k_{\rm max}}, k_{\rm max}, H(t_{k_{\rm max}}), R_*(t_{k_{\rm max}}) \right)$
   - klist...: list of wavenumbers for which the distribution of $\delta$ is computed and the times when they reenter horizon: $\left( k_j, t_{k_j}, H(t_{k_j}) \right)$
   - FkW...: the time evolution of the average false vacuum fraction, the contribution to the false vacuum fraction from $j>j_c$ bubbles, the expected number of bubbles and its time derivative for $k = 0.9 k_{\rm max}$: $\left( t,\bar{F},F_k^{j>j_c},\bar{N}_k,\partial_t \bar{N}_k \right)$
