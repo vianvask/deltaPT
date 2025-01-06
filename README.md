@@ -7,7 +7,7 @@ Running takes two input parameters beta/H0 and gamma/beta that parametrize the b
 
 Output:
   - tkR...: largest wavenumber ($k_{\rm max}$) that exits horizon during the thermal inflation: $\left( t_{k_{\rm max}}, k_{\rm max}, H(t_{k_{\rm max}}), R_*(t_{k_{\rm max}}) \right)$
-  - klist...: list of wavenumbers for which the distribution of $\delta$ is computed and the times when they reenter horizon: $\left( k, t_k, H(t_k) \right)$
+  - klist...: list of wavenumbers for which the distribution of $\delta$ is computed and the times when they reenter horizon: $\left( k_j, t_{k_j}, H(t_{k_j}) \right)$
   - FkW...: the time evolution of the average false vacuum fraction, the contribution to the false vacuum fraction from $j>j_c$ bubbles, the expected number of bubbles and its time derivative for $k = 0.9 k_{\rm max}$: $\left( t,\bar{F},F_k^{j>j_c},\bar{N}_k,\partial_t \bar{N}_k \right)$
   - Fk...: the time evolution of $F_k$ for $k = 0.9 k_{\rm max}$ in the first 10 simulations: $\left( F_k(t_1), F_k(t_2), \dots \right)$
   - deltak...: the time evolution of $\delta$ for $k = 0.9 k_{\rm max}$ in the first 10 simulations: $\left( \delta(t_1), \delta(t_2), \dots \right)$
