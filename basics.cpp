@@ -25,13 +25,9 @@ double randomreal(double x1, double x2, rgen &mt) {
 double interpolate(double x, vector<vector<double> > &y) {
     int n = y.size();
     if (x > y[n-1][0]) {
-        cout << "Warning: the point lies above of the interpolation range." << endl;
-        cout << x << "   " << y[n-1][0] << endl;
         return y[n-1][1];
     }
     if (x < y[0][0]) {
-        cout << "Warning: the point lies below of the interpolation range." << endl;
-        cout << x << "   " << y[0][0] << endl;
         return y[0][1];
     }
     double dx = y[1][0] - y[0][0];

@@ -1,13 +1,14 @@
 #include "functions.h"
 
 // evolution of the Universe on average, returns {kmax,tkmax}
-vector<double> averageevolution(function<double(double)> Gamma, const double tmin, const int jtmax, const double dt, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht) {
+vector<double> averageevolution(function<double(double)> Gamma, const double tmin, const int jtmax, const double dt, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht, vector<vector<double> > &rhoRt, vector<vector<double> > &rhoVt) {
     
     // initial state in vacuum dominance:
-    double t = tmin, a = exp(tmin), tau = 1.0 - exp(-tmin);
-    double rhoV = 1.0, rhoV0 = 1.0, rhoR = 0.0;
-    
-    double H = 1.0, F = 1.0, F0 = 1.0;
+    double H = 1.0;
+    double t = tmin, a = exp(H*tmin), tau = (1.0 - exp(-H*tmin))/H;
+    double rhoR = 0.0001*3.0*pow(H,2.0)/(8.0*PI);
+    double rhoV0 = 3.0*pow(H,2.0)/(8.0*PI) - rhoR;
+    double F = 1.0, F0 = 1.0;
     vector<double> tmp(2);
     double Nt, kmax = 0.0, tkmax;
     
@@ -22,17 +23,14 @@ vector<double> averageevolution(function<double(double)> Gamma, const double tmi
         tmp[1] = tau;
         taut.push_back(tmp);
         
-        // compute the false vacuum fraction
-        Nt = 0.0;
-        F0 = F;
-        for (int j = 0; j < taut.size(); j++) {
-            Nt += 4.0*PI/3.0*dt*Gamma(taut[j][0])*pow(at[j][1]*radius(tau,taut[j][1]), 3.0);
-        }
-        F = exp(-Nt);
+        tmp[1] = rhoR;
+        rhoRt.push_back(tmp);
+        tmp[1] = rhoV0*F;
+        rhoVt.push_back(tmp);
         
-        // compute the scale factor and conformal time
-        H = sqrt(rhoV + rhoR);
-        a += dt*H*a;
+        // compute the Hubble rate, scale factor and conformal time
+        H = sqrt(8.0*PI*(rhoV0*F + rhoR)/3.0);
+        a += H*a*dt;
         tau += dt/a;
         
         if (a*H > kmax) {
@@ -40,9 +38,16 @@ vector<double> averageevolution(function<double(double)> Gamma, const double tmi
             tkmax = t;
         }
         
-        // update the energy densities
-        rhoV = F;
-        rhoR += -4.0*H*rhoR*dt - (F-F0);
+        // update the false vacuum fraction
+        Nt = 0.0;
+        F0 = F;
+        for (int j = 0; j < taut.size(); j++) {
+            Nt += 4.0*PI/3.0*dt*Gamma(taut[j][0])*pow(at[j][1]*radius(tau,taut[j][1]), 3.0);
+        }
+        F = exp(-Nt);
+        
+        // update the radiation energy density
+        rhoR += -rhoV0*(F-F0) - 4.0*H*rhoR*dt;
         
         t += dt;
     }
@@ -53,33 +58,191 @@ vector<double> averageevolution(function<double(double)> Gamma, const double tmi
     return tmp;
 }
 
+ // evolution of the total energy density
+ void rhoevolutionFG(vector<vector<double> > &F, vector<vector<double> > &deltaF, vector<vector<double> > &phiF, vector<vector<double> > &phiB, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht, vector<vector<double> > &rhoRt, vector<vector<double> > &rhoVt, vector<vector<double> > &FW, vector<vector<double> > &N, vector<vector<vector<double> > > &pd, double k, int J, int jdmax, rgen &mt) {
+     
+     const double dt = at[1][0] - at[0][0];
+     double t = at[0][0];
+     
+     double H = Ht[0][1];
+     double a = at[0][1];
+     double rhoRb = rhoRt[0][1];
+     
+     double rhoV0 = rhoVt[0][1];
+     double rhoVb = rhoV0;
+     
+     double FS = 1.0;
+     double rhoV = rhoV0;
+     
+     double rho = rhoRb + rhoVb;
+     double P = rhoRb/3.0 - rhoVb;
+     
+     double deltarhoV = 0.0, deltarhoR = 0.0;
+     double deltarho = 0.0, deltaP = 0.0, deltaq = 0.0, PhiB = 0.0, Phi = 0.0;
+     
+     vector<double> tmp(2);
+     tmp[0] = Ht[0][0];
+     tmp[1] = FS;
+     F.push_back(tmp);
+     
+     tmp[1] = 0.0;
+     deltaF.push_back(tmp);
+     phiF.push_back(tmp);
+     phiB.push_back(tmp);
+     
+     double tau, deltarhoV0;
+     vector<double> tauj, dj, rj;
+     int jb = 0;
+     for (int jt = 1; jt < at.size(); jt++) {
+         tau = taut[jt][1];
+         rhoVb = rhoVt[jt][1];
+         rhoRb = rhoRt[jt][1];
+         rho = rhoRb + rhoVb;
+         P = rhoRb/3.0 - rhoVb;
+         
+         Phi = -4.0*PI*deltaq/H;
+         
+         // try to generate a bubble
+         if (jb < J && sqrt(abs(1.0 + 2.0*Phi))*dt*N[jt][2] > randomreal(0.0,1.0,mt)) {
+             tauj.push_back(taut[jt][1]);
+             dj.push_back(findrootG(randomreal(0.0,pd[jt][jdmax-1][1],mt), 0.001, pd[jt]));
+             rj.push_back(0.0);
+             jb++;
+         }
+         
+         // compute the false vacuum fraction
+         FS = 1.0;
+         for (int j = 0; j < jb; j++) {
+             rj[j] += sqrt(abs(1.0 + 2.0*Phi))*dt/a;
+             FS *= 1.0 - Vfrac(rj[j], dj[j], k);
+         }
+         rhoV = rhoV0*FS*FW[jt][1];
+         
+         deltarhoV0 = deltarhoV;
+         deltarhoV = rhoV - rhoVb;
+                  
+         deltarhoR += -3.0*H*(deltarho+deltaP)*dt - (deltarhoV-deltarhoV0) + pow(k/a,2.0)*deltaq*dt + 4.0*PI*(rho+P)*(3.0*H*deltaq-deltarho)/H*dt;
+         deltaq += -deltaP*dt - 3.0*H*deltaq*dt + 4.0*PI*(rho+P)*deltaq/H*dt;
+         
+         deltarho = deltarhoR + deltarhoV;
+         deltaP = deltarhoR/3.0 - deltarhoV;
+         
+         PhiB = 4.0*PI*pow(a/k,2.0)*(3.0*H*deltaq-deltarho);
+         
+         H = Ht[jt][1];
+         a = at[jt][1];
+         
+         tmp[0] = Ht[jt][0];
+         tmp[1] = rhoV/rhoV0;
+         F.push_back(tmp);
+         
+         tmp[1] = deltarho/rho;
+         deltaF.push_back(tmp);
+         
+         tmp[1] = Phi;
+         phiF.push_back(tmp);
+         
+         tmp[1] = PhiB;
+         phiB.push_back(tmp);
+     }
+ }
+
+
 // evolution of the total energy density
-vector<vector<double> > rhoevolution(vector<vector<double> > &Ft, vector<vector<double> > &Ht) {
+void rhoevolutionCG(vector<vector<double> > &F, vector<vector<double> > &deltaC, vector<vector<double> > &phiC, vector<vector<double> > &phiB, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht, vector<vector<double> > &rhoRt, vector<vector<double> > &rhoVt, vector<vector<double> > &FW, vector<vector<double> > &N, vector<vector<vector<double> > > &pd, double k, int J, int jdmax, rgen &mt) {
     
-    // initial state in vacuum dominance:
-    const double dt = Ft[1][0] - Ft[0][0];
+    const double dt = at[1][0] - at[0][0];
+    double t = at[0][0];
+    
+    double H = Ht[0][1];
+    double a = at[0][1];
+    double rhoRb = rhoRt[0][1];
+    
+    double rhoV0 = rhoVt[0][1];
+    double rhoVb = rhoV0;
+    
+    double FS = 1.0;
+    double rhoV = rhoV0;
+    
+    double rho = rhoRb + rhoVb;
+    double P = rhoRb/3.0 - rhoVb;
+    
+    double deltarhoV = 0.0, deltarhoR = 0.0;
+    double deltarho = 0.0, deltaP = 0.0, deltaq = 0.0, PhiB = 0.0, Phi = 0.0;
     
     vector<double> tmp(2);
-    double rhoV, rhoR = 0.0;
-    vector<vector<double> > rho;
-    for (int jt = 0; jt < Ft.size(); jt++) {
-        rhoV = Ft[jt][1];
-        if (jt>0) {
-            rhoR += -4.0*Ht[jt][1]*rhoR*dt - (Ft[jt][1]-Ft[jt-1][1]);
+    tmp[0] = Ht[0][0];
+    tmp[1] = FS;
+    F.push_back(tmp);
+    
+    tmp[1] = 0.0;
+    deltaC.push_back(tmp);
+    phiC.push_back(tmp);
+    phiB.push_back(tmp);
+    
+    double tau, deltarhoV0, B, dPsi, Psi = 0.0;
+    vector<double> tauj, dj, rj;
+    int jb = 0;
+    for (int jt = 1; jt < at.size(); jt++) {
+        tau = taut[jt][1];
+        rhoVb = rhoVt[jt][1];
+        rhoRb = rhoRt[jt][1];
+        rho = rhoRb + rhoVb;
+        P = rhoRb/3.0 - rhoVb;
+        
+        Phi = -deltaP/(P+rho);
+        
+        // try to generate a bubble
+        if (jb < J && sqrt(abs(1.0 + 0.0*2.0*Phi))*dt*N[jt][2] > randomreal(0.0,1.0,mt)) {
+            tauj.push_back(taut[jt][1]);
+            dj.push_back(findrootG(randomreal(0.0,pd[jt][jdmax-1][1],mt), 0.001, pd[jt]));
+            rj.push_back(0.0);
+            jb++;
         }
         
-        tmp[0] = Ft[jt][0];
-        tmp[1] = rhoV + rhoR;
+        // compute the false vacuum fraction
+        FS = 1.0;
+        for (int j = 0; j < jb; j++) {
+            rj[j] += sqrt(abs(1.0 + 0.0*2.0*Phi))*dt/a;
+            FS *= 1.0 - Vfrac(rj[j], dj[j], k);
+        }
+        rhoV = rhoV0*FS*FW[jt][1];
         
-        rho.push_back(tmp);
+        deltarhoV0 = deltarhoV;
+        deltarhoV = rhoV - rhoVb;
+                 
+        B = (4.0*PI*pow(a,2.0)*deltarho + pow(k,2.0)*Psi)/(pow(k,2.0)*a*H);
+        dPsi = -H*Phi;
+        deltarhoR += -3.0*H*(deltarho+deltaP)*dt - (deltarhoV-deltarhoV0) + (rho+P)*(3.0*dPsi - pow(k,2.0)*B/a)*dt;
+        Psi += dPsi*dt;
+        
+        deltarho = deltarhoR + deltarhoV;
+        deltaP = deltarhoR/3.0 - deltarhoV;
+        
+        PhiB = Psi - a*H*B;
+        
+        H = Ht[jt][1];
+        a = at[jt][1];
+        
+        tmp[0] = Ht[jt][0];
+        tmp[1] = rhoV/rhoV0;
+        F.push_back(tmp);
+        
+        tmp[1] = deltarho/rho;
+        deltaC.push_back(tmp);
+        
+        tmp[1] = Phi;
+        phiC.push_back(tmp);
+        
+        tmp[1] = PhiB;
+        phiB.push_back(tmp);
     }
-    
-    return rho;
 }
+
+
 
 // time of horizon reentry of scale k
 double findtk(double k, double tkmax, vector<vector<double> > &at, vector<vector<double> > &Ht) {
-    
     vector<vector<double> > aH;
     vector<double> tmp(2);
     for (int jt = 0; jt < at.size(); jt++) {
@@ -94,7 +257,6 @@ double findtk(double k, double tkmax, vector<vector<double> > &at, vector<vector
 
 // expected number of bubbles in sphere of radius 1/k
 vector<vector<double> > Nbark(function<double(double)> Gamma, const double k, vector<vector<double> > &Ft, vector<vector<double> > &taut, vector<vector<double> > &at) {
-    
     const double dt = at[1][0] - at[0][0];
     
     double t, tau, Np, N = 0.0;
@@ -122,21 +284,16 @@ vector<vector<double> > Nbark(function<double(double)> Gamma, const double k, ve
 
 // computes the characteristic bubble radius
 double Rstar(function<double(double)> Gamma, vector<vector<double> > &Ft, vector<vector<double> > &at, double tp) {
-    
     const double dt = at[1][0] - at[0][0];
     
     int jt = 0;
     double Rstar = 0.0;
     while (at[jt][0] < tp) {
-        
         Rstar += dt*Ft[jt][1]*Gamma(at[jt][0])*pow(at[jt][1],3.0);
-        
         jt++;
     }
     Rstar += (tp - at[jt-1][0])*Ft[jt][1]*Gamma(at[jt][0])*pow(at[jt][1],3.0);
-    
     Rstar = pow(Rstar/pow(at[jt-1][1] + (tp - at[jt-1][0])*(at[jt][1]-at[jt-1][1]),3.0), -1.0/3.0);
-    
     return Rstar;
 }
 
@@ -144,13 +301,13 @@ double Rstar(function<double(double)> Gamma, vector<vector<double> > &Ft, vector
 // finds the time range where the computation should be performed
 vector<double> findtrange(function<double(double)> Gamma, double Nbarmin, double Fmin) {
     vector<double> trange(2);
-    
-    vector<vector<double> > Ft, taut, at, Ht;
+    vector<vector<double> > Ft, taut, at, Ht, rhoRt, rhoVt;
     vector<double> tmp(2);
     
     int jtmax = 6000;
     double dt = 0.001;
-    tmp = averageevolution(Gamma, -3.0, jtmax, dt, Ft, taut, at, Ht);
+    tmp = averageevolution(Gamma, -3.0, jtmax, dt, Ft, taut, at, Ht, rhoRt, rhoVt);
+        
     double kmax = tmp[0];
         
     vector<vector<double> > Nk = Nbark(Gamma, kmax, Ft, taut, at);
@@ -175,7 +332,6 @@ vector<double> findtrange(function<double(double)> Gamma, double Nbarmin, double
 
 // the false vacuum fraction neglecting the first J bubbles
 vector<vector<double> > Fk(vector<vector<double> > &Nk, vector<vector<vector<double> > > &pd, const double k, int J, vector<vector<double> > &taut) {
-    
     const double dt = taut[1][0] - taut[0][0];
     const double dd = pd[0][1][0] - pd[0][0][0];
     
@@ -191,7 +347,7 @@ vector<vector<double> > Fk(vector<vector<double> > &Nk, vector<vector<vector<dou
             tauj = taut[j][1];
             if (Nk[j][1] > J && tau > tauj) {
                 for (int jd = 0; jd < pd[0].size(); jd++) {
-                    Nt += dt*dd*Nk[j][2]*pd[j][jd][2]*Vfrac(tau,tauj,pd[j][jd][0],k);
+                    Nt += dt*dd*Nk[j][2]*pd[j][jd][2]*Vfrac(radius(tau,tauj),pd[j][jd][0],k);
                 }
             }
         }
@@ -200,27 +356,6 @@ vector<vector<double> > Fk(vector<vector<double> > &Nk, vector<vector<vector<dou
         F.push_back(tmp);
     }
     return F;
-}
-
-// generate times tj for j<J
-vector<int> jtlist(vector<vector<double> > &Nk, int J, rgen &mt) {
-    const double dt = Nk[1][0] - Nk[0][0];
-    vector<int> jtlist(J, Nk.size() - 1);
-    int j = 0;
-    for (int jt = 0; jt < Nk.size(); jt++) {
-        if (dt*Nk[jt][2] > 1.0) {
-            cout << "Warning: too long nucleation timestep, N = " << Nk[jt][1] << "." << endl;
-        }
-        if (dt*Nk[jt][2] > randomreal(0.0,1.0,mt)) {
-            jtlist[j] = jt;
-            j++;
-        }
-        if (j >= J) {
-            return jtlist;
-        }
-    }
-    cout << "Warning: nucleation finished at j = " << j << "." << endl;
-    return jtlist;
 }
 
 // CDF of nucleation distances
@@ -246,7 +381,7 @@ vector<vector<vector<double> > > ddist(function<double(double)> Gamma, const dou
             p = 0.0;
             for (int j = 0; j < jt; j++) {
                 if (1.0/k + max(0.0,radius(tau,taut[j][1])) > d) {
-                    p += 4.0*PI*dt*Gamma(taut[j][0])*pow(at[j][1], 3.0)*pow(d,2.0)/Nk[jt][1];
+                    p += 4.0*PI*dt*Gamma(taut[j][0])*pow(at[j][1],3.0)*pow(d,2.0)/Nk[jt][1];
                 }
             }
             ptot += p;
@@ -273,10 +408,28 @@ double Vint(double d, double R, double r) {
     return 0.0;
 }
 
-double Vfrac(double tau, double tauj, double dj, double k) {
+double Vfrac(double rj, double dj, double k) {
     double Vk = 4.0*PI/3.0*pow(k,-3.0);
-    if (tau > tauj) {
-        return Vint(dj, max(0.0,dj-1.0/k)+radius(tau,tauj), 1.0/k)/Vk;
+    return Vint(dj, max(0.0,dj-1.0/k)+rj, 1.0/k)/Vk;
+}
+
+
+// surface area of intersection of two bubbles separated by distance d
+double Sint(double d, double R, double r) {
+    if (R+r > d && abs(R-r) < d) {
+        return PI*R*(pow(r,2.0)-pow(R-d,2.0))/d;
+    }
+    if (R+r > d && R-r >= d) {
+        return 4.0*PI*pow(r,2.0);
+    }
+    if (R+r > d && r-R >= d) {
+        return 4.0*PI*pow(R,2.0);
     }
     return 0.0;
+}
+
+double rhowall(double rj, double dj, double k) {
+    double Vj = 4.0*PI/3.0*pow(dj,3.0);
+    double Vk = 4.0*PI/3.0*pow(k,-3.0);
+    return Sint(dj, max(0.0,dj-1.0/k)+rj, 1.0/k)*Vj/Vk;
 }
