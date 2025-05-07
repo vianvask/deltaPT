@@ -6,6 +6,8 @@ void rhoevolutionFG(vector<vector<double> > &F, vector<vector<double> > &deltaF,
 
 void rhoevolutionCG(vector<vector<double> > &F, vector<vector<double> > &deltaC, vector<vector<double> > &phiC, vector<vector<double> > &phiB, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht, vector<vector<double> > &rhoRt, vector<vector<double> > &rhoVt, vector<vector<double> > &FW, vector<vector<double> > &N, vector<vector<vector<double> > > &pd, double k, int J, int jdmax, rgen &mt);
 
+void rhoevolutionNG(vector<vector<double> > &F, vector<vector<double> > &deltaN, vector<vector<double> > &phiN, vector<vector<double> > &phiB, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht, vector<vector<double> > &rhoRt, vector<vector<double> > &rhoVt, vector<vector<double> > &FW, vector<vector<double> > &N, vector<vector<vector<double> > > &pd, double k, int J, int jdmax, rgen &mt);
+
 
 double findtk(double k, double tkmax, vector<vector<double> > &at, vector<vector<double> > &Ht);
 

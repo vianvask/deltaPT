@@ -116,7 +116,7 @@ int main (int argc, char *argv[]) {
         }
         for (int jk = 0; jk < jkmax; jk++) {
             F.clear(); delta.clear(); phi.clear(); phiB.clear();
-            rhoevolutionCG(F, delta, phi, phiB, taut, at, Ht, rhoRt, rhoVt, FkW[jk], Nk[jk], pdk[jk], klist[jk], J, jdmax, mt);
+            rhoevolutionNG(F, delta, phi, phiB, taut, at, Ht, rhoRt, rhoVt, FkW[jk], Nk[jk], pdk[jk], klist[jk], J, jdmax, mt);
             
             // output F and rho for k=0.9kmax from the first 10 simulations
             if (js < 10 && jk == 12) {

@@ -62,27 +62,12 @@ vector<double> averageevolution(function<double(double)> Gamma, const double tmi
  void rhoevolutionFG(vector<vector<double> > &F, vector<vector<double> > &deltaF, vector<vector<double> > &phiF, vector<vector<double> > &phiB, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht, vector<vector<double> > &rhoRt, vector<vector<double> > &rhoVt, vector<vector<double> > &FW, vector<vector<double> > &N, vector<vector<vector<double> > > &pd, double k, int J, int jdmax, rgen &mt) {
      
      const double dt = at[1][0] - at[0][0];
-     double t = at[0][0];
-     
-     double H = Ht[0][1];
-     double a = at[0][1];
-     double rhoRb = rhoRt[0][1];
-     
      double rhoV0 = rhoVt[0][1];
-     double rhoVb = rhoV0;
      
-     double FS = 1.0;
-     double rhoV = rhoV0;
-     
-     double rho = rhoRb + rhoVb;
-     double P = rhoRb/3.0 - rhoVb;
-     
-     double deltarhoV = 0.0, deltarhoR = 0.0;
-     double deltarho = 0.0, deltaP = 0.0, deltaq = 0.0, PhiB = 0.0, Phi = 0.0;
-     
+     double t = Ht[0][0];
      vector<double> tmp(2);
-     tmp[0] = Ht[0][0];
-     tmp[1] = FS;
+     tmp[0] = t;
+     tmp[1] = 1.0;
      F.push_back(tmp);
      
      tmp[1] = 0.0;
@@ -90,11 +75,17 @@ vector<double> averageevolution(function<double(double)> Gamma, const double tmi
      phiF.push_back(tmp);
      phiB.push_back(tmp);
      
-     double tau, deltarhoV0;
+     double deltarhoV = 0.0, deltarhoR = 0.0, deltarho = 0.0, deltaP = 0.0, deltaq = 0.0, Phi = 0.0, PhiB = 0.0;
+     double tau, H, a, FS, rhoV, rhoVb, rhoRb, rho, P, deltarhoV0;
      vector<double> tauj, dj, rj;
+     
      int jb = 0;
      for (int jt = 1; jt < at.size(); jt++) {
+         t = taut[jt][0];
          tau = taut[jt][1];
+         H = Ht[jt][1];
+         a = at[jt][1];
+         
          rhoVb = rhoVt[jt][1];
          rhoRb = rhoRt[jt][1];
          rho = rhoRb + rhoVb;
@@ -129,9 +120,6 @@ vector<double> averageevolution(function<double(double)> Gamma, const double tmi
          
          PhiB = 4.0*PI*pow(a/k,2.0)*(3.0*H*deltaq-deltarho);
          
-         H = Ht[jt][1];
-         a = at[jt][1];
-         
          tmp[0] = Ht[jt][0];
          tmp[1] = rhoV/rhoV0;
          F.push_back(tmp);
@@ -152,27 +140,12 @@ vector<double> averageevolution(function<double(double)> Gamma, const double tmi
 void rhoevolutionCG(vector<vector<double> > &F, vector<vector<double> > &deltaC, vector<vector<double> > &phiC, vector<vector<double> > &phiB, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht, vector<vector<double> > &rhoRt, vector<vector<double> > &rhoVt, vector<vector<double> > &FW, vector<vector<double> > &N, vector<vector<vector<double> > > &pd, double k, int J, int jdmax, rgen &mt) {
     
     const double dt = at[1][0] - at[0][0];
-    double t = at[0][0];
-    
-    double H = Ht[0][1];
-    double a = at[0][1];
-    double rhoRb = rhoRt[0][1];
-    
     double rhoV0 = rhoVt[0][1];
-    double rhoVb = rhoV0;
     
-    double FS = 1.0;
-    double rhoV = rhoV0;
-    
-    double rho = rhoRb + rhoVb;
-    double P = rhoRb/3.0 - rhoVb;
-    
-    double deltarhoV = 0.0, deltarhoR = 0.0;
-    double deltarho = 0.0, deltaP = 0.0, deltaq = 0.0, PhiB = 0.0, Phi = 0.0;
-    
+    double t = Ht[0][0];
     vector<double> tmp(2);
-    tmp[0] = Ht[0][0];
-    tmp[1] = FS;
+    tmp[0] = t;
+    tmp[1] = 1.0;
     F.push_back(tmp);
     
     tmp[1] = 0.0;
@@ -180,11 +153,17 @@ void rhoevolutionCG(vector<vector<double> > &F, vector<vector<double> > &deltaC,
     phiC.push_back(tmp);
     phiB.push_back(tmp);
     
-    double tau, deltarhoV0, B, dPsi, Psi = 0.0;
+    double deltarhoV = 0.0, deltarhoR = 0.0, deltarho = 0.0, deltaP = 0.0, B = 0.0, Phi = 0.0, Psi = 0.0, PhiB = 0.0;
+    double tau, H, a, FS, rhoV, rhoVb, rhoRb, rho, P, deltarhoV0, dPsi;
     vector<double> tauj, dj, rj;
+    
     int jb = 0;
-    for (int jt = 1; jt < at.size(); jt++) {
+    for (int jt = 0; jt < at.size(); jt++) {
+        t = taut[jt][0];
         tau = taut[jt][1];
+        H = Ht[jt][1];
+        a = at[jt][1];
+        
         rhoVb = rhoVt[jt][1];
         rhoRb = rhoRt[jt][1];
         rho = rhoRb + rhoVb;
@@ -193,7 +172,7 @@ void rhoevolutionCG(vector<vector<double> > &F, vector<vector<double> > &deltaC,
         Phi = -deltaP/(P+rho);
         
         // try to generate a bubble
-        if (jb < J && sqrt(abs(1.0 + 0.0*2.0*Phi))*dt*N[jt][2] > randomreal(0.0,1.0,mt)) {
+        if (jb < J && sqrt(abs(1.0 + 2.0*Phi))*dt*N[jt][2] > randomreal(0.0,1.0,mt)) {
             tauj.push_back(taut[jt][1]);
             dj.push_back(findrootG(randomreal(0.0,pd[jt][jdmax-1][1],mt), 0.001, pd[jt]));
             rj.push_back(0.0);
@@ -203,7 +182,7 @@ void rhoevolutionCG(vector<vector<double> > &F, vector<vector<double> > &deltaC,
         // compute the false vacuum fraction
         FS = 1.0;
         for (int j = 0; j < jb; j++) {
-            rj[j] += sqrt(abs(1.0 + 0.0*2.0*Phi))*dt/a;
+            rj[j] += sqrt(abs(1.0 + 2.0*Phi))*dt/a;
             FS *= 1.0 - Vfrac(rj[j], dj[j], k);
         }
         rhoV = rhoV0*FS*FW[jt][1];
@@ -221,10 +200,7 @@ void rhoevolutionCG(vector<vector<double> > &F, vector<vector<double> > &deltaC,
         
         PhiB = Psi - a*H*B;
         
-        H = Ht[jt][1];
-        a = at[jt][1];
-        
-        tmp[0] = Ht[jt][0];
+        tmp[0] = t;
         tmp[1] = rhoV/rhoV0;
         F.push_back(tmp);
         
@@ -238,6 +214,86 @@ void rhoevolutionCG(vector<vector<double> > &F, vector<vector<double> > &deltaC,
         phiB.push_back(tmp);
     }
 }
+
+
+// evolution of the total energy density
+void rhoevolutionNG(vector<vector<double> > &F, vector<vector<double> > &deltaN, vector<vector<double> > &phiN, vector<vector<double> > &phiB, vector<vector<double> > &taut, vector<vector<double> > &at, vector<vector<double> > &Ht, vector<vector<double> > &rhoRt, vector<vector<double> > &rhoVt, vector<vector<double> > &FW, vector<vector<double> > &N, vector<vector<vector<double> > > &pd, double k, int J, int jdmax, rgen &mt) {
+    
+    const double dt = at[1][0] - at[0][0];
+    double rhoV0 = rhoVt[0][1];
+    
+    double t = Ht[0][0];
+    vector<double> tmp(2);
+    tmp[0] = t;
+    tmp[1] = 1.0;
+    F.push_back(tmp);
+    
+    tmp[1] = 0.0;
+    deltaN.push_back(tmp);
+    phiN.push_back(tmp);
+    phiB.push_back(tmp);
+    
+    double deltarhoV = 0.0, deltarhoR = 0.0, deltarho = 0.0, deltaP = 0.0, v = 0.0, Phi = 0.0, PhiB = 0.0;
+    double tau, H, a, FS, rhoV, rhoVb, rhoRb, rho, P, deltarhoV0, dPhi;
+    vector<double> tauj, dj, rj;
+    
+    int jb = 0;
+    for (int jt = 0; jt < at.size(); jt++) {
+        t = taut[jt][0];
+        tau = taut[jt][1];
+        H = Ht[jt][1];
+        a = at[jt][1];
+
+        rhoVb = rhoVt[jt][1];
+        rhoRb = rhoRt[jt][1];
+        rho = rhoRb + rhoVb;
+        P = rhoRb/3.0 - rhoVb;
+        
+        // try to generate a bubble
+        if (jb < J && sqrt(abs(1.0 + 2.0*Phi))*dt*N[jt][2] > randomreal(0.0,1.0,mt)) {
+            tauj.push_back(taut[jt][1]);
+            dj.push_back(findrootG(randomreal(0.0,pd[jt][jdmax-1][1],mt), 0.001, pd[jt]));
+            rj.push_back(0.0);
+            jb++;
+        }
+        
+        // compute the false vacuum fraction
+        FS = 1.0;
+        for (int j = 0; j < jb; j++) {
+            rj[j] += sqrt(abs(1.0 + 2.0*Phi))*dt/a;
+            FS *= 1.0 - Vfrac(rj[j], dj[j], k);
+        }
+        rhoV = rhoV0*FS*FW[jt][1];
+        
+        deltarhoV0 = deltarhoV;
+        deltarhoV = rhoV - rhoVb;
+        
+        v = (4.0*PI*pow(a,2.0)*deltarho + pow(k,2.0)*Phi)/(12.0*PI*pow(a,3.0)*H*(rho+P));
+        dPhi = -(4.0*PI*deltarho + (pow(k/a,2.0)+3.0*pow(H,2.0))*Phi)/(3.0*H);
+        
+        deltarhoR += -3.0*H*(deltarho+deltaP)*dt - (deltarhoV-deltarhoV0) + (rho+P)*(3.0*dPhi + pow(k,2.0)*v/a)*dt;
+        Phi += dPhi*dt;
+        
+        deltarho = deltarhoR + deltarhoV;
+        deltaP = deltarhoR/3.0 - deltarhoV;
+        
+        PhiB = Phi;
+        
+        tmp[0] = t;
+        tmp[1] = rhoV/rhoV0;
+        F.push_back(tmp);
+        
+        tmp[1] = deltarho/rho;
+        deltaN.push_back(tmp);
+        
+        tmp[1] = Phi;
+        phiN.push_back(tmp);
+        
+        tmp[1] = PhiB;
+        phiB.push_back(tmp);
+    }
+}
+
 
 
 
