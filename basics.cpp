@@ -54,3 +54,20 @@ double findrootG(double y, double dx, vector<vector<double> > &list) {
     }
     return x;
 }
+
+// finds the position of x for which y(x)=y for a growing function y(x)
+double finditerG(double y, vector<vector<double> >& list) {
+    int imin = 0;
+    int imax = list.size() - 1;
+    int i = (int)((imax + imin)/2);
+    while (imax - imin > 1) { // to not get fucked up by casting
+        if (list[i][1] > y) {
+            imax = i;
+        }
+        else {
+            imin = i;
+        }
+        i = (int)((imax + imin) / 2);
+    }
+    return i;
+}
